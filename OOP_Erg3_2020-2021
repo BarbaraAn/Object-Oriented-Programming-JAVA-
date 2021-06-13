@@ -1,0 +1,1281 @@
+package oop_erg3;
+import java.util.Scanner;
+/**
+ *
+ * @author Barbara Angelopoulou
+ */
+public class Main {
+   
+    //0 for other sort, 1 for ISBN sort and 2 for Year sort
+    static int sortType = 0;
+    static int length = 0;
+    //Sum of all sales
+    static double Total = 0;
+    // created Scanner object for system input
+    static Scanner sc = new Scanner(System.in);
+    public static void main(String[] args) {
+    //Created here to be used in all methods of class "Main"
+    Book[] TB = new Book[10];
+    int[] DSTB = new int[10];
+    
+    for(int i=0; i<10; i++){
+        DSTB[i]=0;
+    }
+    
+   
+        int selection;
+        
+        do{
+            //print menu
+            System.out.println("Λίστα Επιλογών" + "\n1. Εισαγωγή στοιχείων βιβλίου" + "\n2. Επεξεργασία καταχωρημένων βιβλίων" + "\n3. Πώληση βιβλίου" + "\n4. Εξοδος απο την εφαρμογή");
+            //user input
+            System.out.print("Δώσε μια επιλογή: ");
+            selection = sc.nextInt();
+            //switch for options 1-4 and false 
+            switch(selection){
+                //used if to check if table TB has empty seats 
+                case 1: if(length <10){
+                   TB[length] = newBook();
+                   length++;
+                }
+                else{
+                    //TB table full message
+                    System.out.println("Αδυναμία καταχώρισης βιβλίου λόγω ελειψής θέσεων στον πίνακα");
+                }
+                break;
+                case 2:if(length > 0){
+                     EditBook(TB,length);
+                }
+                else{
+                    //TB table empty message
+                    System.out.println("Αδυναμία Επεξεργασίας βιβλίου λόγω ελειψής καταχωρήσεων στον πίνακα");
+                }
+                break;
+                case 3:if(length > 0){
+                    BookSale(TB,length,DSTB);
+                }
+                else{
+                    //TB table empty message
+                    System.out.println("Αδυναμία πώλησης βιβλίου λόγω ελειψής καταχωρήσεων στον πίνακα");
+                }
+                break;
+                //selection to end the program
+                case 4:
+                break;    
+                //wrong input message
+                default: System.out.println("\nΜη έγκυρη επιλογή \n");  
+            }      
+        } while(selection != 4);
+        
+    }
+    
+    public static Book newBook(){
+        Book temp = new Book();
+        System.out.println("\nΚαταχώρηση βιβλίου");
+        System.out.print("Ονομα βιβλίου: ");
+        String bookName = sc.next();
+        System.out.print("Ονομα συγγραφέα: ");
+        String bookWriter = sc.next();
+        
+        boolean flag = true;
+        int bookYear;
+        String bookISBN;
+        do{
+            System.out.print("Ετος έκδοσης βιβλίου: ");
+            bookYear = sc.nextInt();
+            
+            //year check (4 symbols)
+            if(bookYear < 9999 && bookYear >= 1967 ){ 
+                //first ISBN used in 1967
+                flag = false;    
+            }
+            //error message 
+            else{
+                System.out.println("Λάθος έτος έκδοσης βιβλίου, παρακαλώ εισάγετε ξανά ");
+            }
+        }while(flag);
+       
+        
+       //
+        do{
+            System.out.print("Κωδικός ISBN: ");
+            bookISBN = sc.next();
+            flag = correctISBN(bookISBN, bookYear);
+        }while(flag);
+        
+        
+        System.out.print("Ονομα εκδοτικού οίκου: ");
+        String bookPublisher = sc.next();
+        System.out.print("Αριθμός σελιδών βιβλίου: ");
+        int bookPages = sc.nextInt();
+        System.out.print("Τίμη βιβλίου: ");
+        double bookPrice = sc.nextDouble();
+       
+        //Book type 
+        do{
+        flag = true;    
+        System.out.print("Τύπος βιβλίου (Dictionary/Science): ");
+        String bookType = sc.next();
+        
+        if(bookType.equals("Dictionary")){
+            flag = false;
+            System.out.print("Αριθμός λυμμάτων βιβλίου: ");
+            int entries = sc.nextInt();
+            //create book on table 
+            temp = new Dictionary(bookName,bookWriter,bookISBN,bookPublisher,bookPages,bookYear,bookPrice,entries); 
+           
+
+            
+        }
+        else if(bookType.equals("Science")){
+            flag = false;
+            System.out.print("Επιστημονικό πεδίο βιβλίου: ");
+            String pedio = sc.next();
+            //create book on table 
+            temp = new Science(bookName,bookWriter,bookISBN,bookPublisher,bookPages,bookYear,bookPrice,pedio); 
+            
+        }
+        else {
+            System.out.println("Μη έγκυρος τύπος βιβλίου ");
+        }
+        
+        
+        }while(flag);
+        
+        
+        return temp; 
+    }
+    
+    
+    public static boolean correctISBN(String bookISBN,  int bookYear ){
+        int sum = 0;
+        //check for ISBN with 10 symbols
+        if (bookYear < 2007){
+           if(bookISBN.length()== 10){
+               int x = 10;
+               for(int i=0; i<10; i++){
+                   sum = sum + (bookISBN.charAt(i)* x);
+                   x--;
+               }
+               //
+               if(sum%11 == 0){
+                   return false;
+               }
+               else{
+                  System.out.println("μη έγκυρος κωδικός ISBN  , παρακαλώ εισάγετε ξανά ");
+               }
+            
+           } 
+           else{
+               System.out.println("O κωδικός ISBN θα έπρεπε να έχει 10 ψηφία , παρακαλώ εισάγετε ξανά ");
+           }
+        }
+        //check for ISBN with 13 symbols
+        else if (bookYear >= 2007){
+            if(bookISBN.length()== 13){
+               int x = 1; 
+               for(int i=0; i<13; i++){
+                  sum = sum + (bookISBN.charAt(i)* x);
+                  if(x==1){
+                      x=3;    
+                  } 
+                  else{
+                      x=1;
+                  }
+               }
+               //
+               if(sum%10 == 0){
+                   return false;
+               }
+               else{
+                  System.out.println("μη έγκυρος κωδικός ISBN  , παρακαλώ εισάγετε ξανά ");
+               }
+           } 
+           else{
+               System.out.println("O κωδικός ISBN θα έπρεπε να έχει 13 ψηφία , παρακαλώ εισάγετε ξανά ");
+           }
+        }
+        
+        
+        
+        return true;
+    }
+    
+    //Selection 2  
+    public static void EditBook(Book[] TB,int length){
+        int selection;
+         
+        do{
+            //Selection 2 first menu
+            System.out.println("Λίστα Επιλογών" +  "\n1. Αναζήτηση βιβλίου" +"\n2. Ταξινόμηση βιβλίων" +  "\n3. Εμφάνιση στοιχείων με τιμή μεταξύ κάποιων ορίων" +"\n4. Εμφάνιση στοιχείων όλων των βιβλίων" + "\n5. Επιστροφή στην αρχική λίστα επιλογών");
+            //user input
+            System.out.print("Δώσε μια επιλογή: ");
+            selection = sc.nextInt();
+            //switch for options 1-5 and false 
+            switch(selection){
+                case 1:searchBook(TB,length,sortType);
+                break;
+                case 2:sortBook(length,TB,sortType);
+                break;    
+                case 3:searchBookByPrice(TB,length);
+                break;
+                case 4: seeTB(length,TB);
+                break;
+                case 5: 
+                break;
+                //wrong input message
+                default: System.out.println("\nΜη έγκυρη επιλογή \n");  
+            }      
+        } while(selection != 5);
+        
+    }
+    
+    public static void searchBook(Book[] TB,  int length, int sortType){
+            System.out.println("\nΕπιλογή πεδίου αναζήτησης " + "\n1.ISBN" + "\n2. Ετος κυκλοφορίας" +"\n3. Επιστροφή στην Αρχική επιλογή");
+            int select = sc.nextInt();
+            //search book per ISBN
+            if(select == 1){
+                    //seatch in not sort table
+                    if(sortType == 0 ){
+                        System.out.println("\nΚαταχώρησε τον κωδικό ISBN του βιβλίου που θέλετε: ");
+                        String x = sc.next();
+                        int i = MyUtils.seqSearch(TB,x,length);
+                        //print book or error message
+                        if(i != -1){
+                            System.out.println(TB[i]);
+                        }
+                        else{
+
+                           System.out.println("Το βιβλίο που αναζητάτε δεν βρέθηκε");
+                        }
+                    }
+                    //seatch in sort table     
+                    else if(sortType == 1){
+                        System.out.println("\nΚαταχώρησε τον κωδικό ISBN του βιβλίου που θέλετε: ");
+                        String x = sc.next();
+                        int i = MyUtils.binSearch(TB,x,length);
+                         //print book or error message
+                        if(i != -1){
+                            System.out.println(TB[i]);
+                        }
+                        else{
+
+                           System.out.println("Το βιβλίο που αναζητάτε δεν βρέθηκε");
+                        }
+                    }
+                     
+            }
+          
+            //search book per year
+            else if(select == 2){                
+                        //seatch in not sort table
+                        if(sortType == 0){
+                            System.out.println("\nΚαταχώρησε το έτος έκδοσης του βιβλίου που θέλετε: ");
+                            int y = sc.nextInt();
+                            int i = MyUtils.seqSearch(TB,y,length);
+                            //print book or error message
+                            if(i != -1){
+                                System.out.println(TB[i]);
+                            }
+                            else{
+
+                               System.out.println("Το βιβλίο που αναζητάτε δεν βρέθηκε");
+                            }
+                        }
+                        //seatch in sort table     
+                        else if(sortType == 2){
+                            System.out.println("\nΚαταχώρησε το έτος έκδοσης του βιβλίου που θέλετε: ");
+                            int y = sc.nextInt();
+                            int i = MyUtils.binSearch(TB,y,length);
+                             //print book or error message
+                            if(i != -1){
+                                System.out.println(TB[i]);
+                            }
+                            else{
+
+                               System.out.println("Το βιβλίο που αναζητάτε δεν βρέθηκε");
+                            }
+                        }
+                          
+                }
+                //back to menu 1
+                else if(select == 3){
+              
+                }
+                //error 404 selection not found
+                else{
+                    System.out.println("μη έγκυρη επιλογή  , παρακαλώ εισάγετε ξανά ");
+                    //Recursion instead of do while
+                    searchBook(TB,length,sortType);
+                }
+        
+    }
+    
+    public static void searchBookByPrice(Book[] TB,int length){
+        System.out.println("\nΚαταχώρησε την ελάχιστη τιμή: ");
+        double minPrice = sc.nextDouble();
+        System.out.println("\nΚαταχώρησε την μέγιστη τιμή: ");
+        double maxPrice = sc.nextDouble(); 
+        MyUtils.valueSearch(TB, minPrice, maxPrice,length);
+        
+    }
+    
+    
+    public static void seeTB(int length,Book TB[]){
+        if(length > 0){
+            for(int i=0; i<length; i++){
+                System.out.println(TB[i]);
+            }
+        }
+        else{
+             System.out.println("Δεν υπάρχουν βιβλία στον πίνακα");
+        }
+            
+    }
+    
+    public static void sortBook(int length, Book TB[], int sortType){
+        System.out.println("\nΕπιλογή πεδίου ταξινόμισης " + "\n1. Ονομα συγγραφέα" + "\n2. ISBN " +"\n3. Ετος κυκλοφορίας" +"\n4. Τιμή βιβλίου " +"\n5. Επιστροφή στην Αρχική επιλογή");
+        int select = sc.nextInt();
+        int select2;
+        //sort by Writer's Name
+        if(select == 1){
+                do{
+                    System.out.println("\nΕπιλογή μεθόδου ταξινόμισης " + "\n1.Bubblesort "+ "\n2. Ταξινόμηση με Εισαγωγή"+ "\n3. Ταξινόμηση με Επιλογή"+ "\n4. Γρήγορη Ταξινόμηση "+ "\n5. Ταξινόμηση με Συγχώνευση"+"\n6.  Επιστροφή στην επιλογή πεδίου ταξινόμισης");
+                    select2 = sc.nextInt();
+                    //Bubblesort
+                    if(select2 == 1){
+                        select2 = 6; 
+                        MyUtils.bubbleSort(TB, length, select);
+                    }
+                    //Insertionsort
+                    else if(select2 == 2){
+                        select2 = 6; 
+                        MyUtils.insertionSort(TB, length, select);
+                    }
+                    //Selectionsort
+                    else if(select2 == 3){
+                       select2 = 6;
+                       MyUtils.selectionSort(TB, length, select);
+                    }
+                    //Quicksort
+                    else if(select2 == 4){
+                        select2 = 6;
+                        MyUtils.quickSort(TB, length, select, 0 ,length - 1);
+                    }
+                    //Mergesort
+                    else if(select2 == 5){
+                       select2 = 6;
+                       MyUtils.mergeSort(TB, length, select ,0 ,length - 1 );select2 = 6;
+                    }
+                    else if(select2 == 6){
+                        
+                    }
+                    else {
+                    System.out.println("Μη αποδεκτή επιλογή "); 
+                    }
+        
+                }while(select2 != 6);
+        } 
+        //sort by ISBN
+        if(select == 2){
+               
+                do{
+                    System.out.println("\nΕπιλογή μεθόδου ταξινόμισης " + "\n1.Bubblesort "+ "\n2. Ταξινόμηση με Εισαγωγή"+ "\n3. Ταξινόμηση με Επιλογή"+ "\n4. Γρήγορη Ταξινόμηση "+ "\n5. Ταξινόμηση με Συγχώνευση"+"\n6.  Επιστροφή στην επιλογή πεδίου ταξινόμισης");
+                    select2 = sc.nextInt();
+                    //Bubblesort
+                    if(select2 == 1){
+                        sortType = 1;
+                        MyUtils.bubbleSort(TB, length, select);
+                        select2 = 6; 
+                    }
+                    //Insertionsort
+                    else if(select2 == 2){
+                        sortType = 1;
+                        MyUtils.insertionSort(TB, length, select);
+                        select2 = 6;
+                    }
+                    //Selectionsort
+                    else if(select2 == 3){
+                       sortType = 1;
+                       MyUtils.selectionSort(TB, length, select);
+                       select2 = 6; 
+                    }
+                    //Quicksort
+                    else if(select2 == 4){
+                        sortType = 1;
+                        MyUtils.quickSort(TB, length, select, 0 ,length - 1);
+                        select2 = 6; 
+                    }
+                    //Mergesort
+                    else if(select2 == 5){
+                       sortType = 1;
+                       MyUtils.mergeSort(TB, length, select, 0 ,length - 1);
+                       select2 = 6; 
+                    }
+                    else if(select2 == 6){
+                        
+                    }
+                    else {
+                    System.out.println("Μη αποδεκτή επιλογή "); 
+                    }
+        
+                }while(select2 != 6);
+        }
+        //sort by Year
+        if(select == 3){
+               
+                do{
+                    System.out.println("\nΕπιλογή μεθόδου ταξινόμισης " + "\n1.Bubblesort "+ "\n2. Ταξινόμηση με Εισαγωγή"+ "\n3. Ταξινόμηση με Επιλογή"+ "\n4. Γρήγορη Ταξινόμηση "+ "\n5. Ταξινόμηση με Συγχώνευση"+"\n6.  Επιστροφή στην επιλογή πεδίου ταξινόμισης");
+                    select2 = sc.nextInt();
+                    //Bubblesort
+                    if(select2 == 1){
+                        sortType = 2;
+                        MyUtils.bubbleSort(TB, length, select);
+                        select2 = 6;
+                    }
+                    //Insertionsort
+                    else if(select2 == 2){
+                        sortType = 2;
+                        MyUtils.insertionSort(TB, length, select);
+                        select2 = 6;
+                    }
+                    //Selectionsort
+                    else if(select2 == 3){
+                       sortType = 2; 
+                       MyUtils.selectionSort(TB, length, select);
+                       select2 = 6;
+                    }
+                    //Quicksort
+                    else if(select2 == 4){
+                        sortType = 2;
+                        MyUtils.quickSort(TB, length, select, 0 ,length - 1);
+                        select2 = 6;
+                    }
+                    //Mergesort
+                    else if(select2 == 5){
+                       sortType = 2; 
+                       MyUtils.mergeSort(TB, length, select, 0 ,length - 1);
+                       select2 = 6;
+                    }
+                    else if(select2 == 6){
+
+                    }
+                    else {
+                        System.out.println("Μη αποδεκτή επιλογή "); 
+                     }
+
+                }while(select2 != 6);
+        }
+        //sort by Price
+        if(select == 4){
+              
+                do{
+                    System.out.println("\nΕπιλογή μεθόδου ταξινόμισης " + "\n1.Bubblesort "+ "\n2. Ταξινόμηση με Εισαγωγή"+ "\n3. Ταξινόμηση με Επιλογή"+ "\n4. Γρήγορη Ταξινόμηση "+ "\n5. Ταξινόμηση με Συγχώνευση"+"\n6.  Επιστροφή στην επιλογή πεδίου ταξινόμισης");
+                    select2 = sc.nextInt();
+                    //Bubblesort
+                    if(select2 == 1){
+                        MyUtils.bubbleSort(TB, length, select);
+                        select2 = 6;
+                    }
+                    //Insertionsort
+                    else if(select2 == 2){
+                        MyUtils.insertionSort(TB, length, select);
+                        select2 = 6;
+                    }
+                    //Selectionsort
+                    else if(select2 == 3){
+                       MyUtils.selectionSort(TB, length, select);
+                       select2 = 6;
+                    }
+                    //Quicksort
+                    else if(select2 == 4){
+                        MyUtils.quickSort(TB, length, select, 0 ,length - 1);
+                        select2 = 6;
+                       
+                    }
+                    //Mergesort
+                    else if(select2 == 5){
+                       MyUtils.mergeSort(TB, length, select, 0 ,length - 1);
+                       select2 = 6;
+                    }
+                    else if(select2 == 6){
+                        
+                    }
+                    else {
+                    System.out.println("Μη αποδεκτή επιλογή "); 
+                    }
+        
+                }while(select2 != 6);
+        }        
+    } 
+    
+    public static void BookSale(Book[] TB,int length, int[] DSTB){
+        int selection,sale  ;
+    
+        sale=0;
+        do{
+          System.out.println("Λίστα Επιλογών" +  "\n1. Καταχώριση νέας πώλησης βιλβίου" +"\n2. Υπολογισμός και εμφάνιση αξίας πωλήσεων" +  "\n3. Ημερήσιο best-seller" +"\n4. Εμφάνιση στοιχείων όλων των πωλήσεων" + "\n5. Επιστροφή στην αρχική λίστα επιλογών");
+          System.out.print("Δώσε μια επιλογή: ");
+            selection = sc.nextInt();
+            //switch for options 1-5 and false 
+            switch(selection){
+                case 1:
+                    DaySale.newSale(TB, length, DSTB);
+                    sale ++;
+                break;
+                case 2:if(sale != 0){ 
+                    DaySale.TotalSales(TB, length, DSTB);
+                }
+                else{
+                    System.out.println("Δεν υπάρχουν πωλήσεις βιβλίων");
+                }
+                break;
+                case 3: if(sale != 0){ 
+                    DaySale.BestSeller(TB,length,DSTB);
+                }
+                else{
+                    System.out.println("Δεν υπάρχει ημερήσιο best-seller λόγω ελειψής πωλήσεων");
+                }
+                break;
+                case 4:if(sale != 0){ 
+                    DaySale.TotalDaySales(TB, length, DSTB, sale);
+                }
+                else{
+                    System.out.println("Δεν υπάρχουν πωλήσεις");
+                }
+                break;
+                 //selection to end the program
+                case 5: 
+                break;
+                //wrong input message
+                default: System.out.println("\nΜη έγκυρη επιλογή \n");  
+            }
+        }while(selection != 5);
+              
+       
+            }   
+}
+
+
+
+public class Book {
+    
+    //fields
+    private String BookTitle, NameWriter, ISBN, Publisher ;
+    private int PagesNumber, Year;
+    private double Price; 
+    
+    //Constructor
+    public Book (){}
+    public Book (String bt,String nw, String isbn, String p, int pn, int y, double pr){
+        this.BookTitle = bt;
+        this.NameWriter = nw;
+        this.ISBN = isbn;
+        this.Publisher = p;
+        this.PagesNumber = pn;
+        this.Year = y;
+        this.Price = pr;
+    }
+    
+    //Getters
+    public String getBookTitle(){
+        return this.BookTitle;
+    }
+    
+    public String getNameWriter(){
+        return this.NameWriter;
+    }
+    
+    public String getISBN(){
+        return this.ISBN;
+    }
+    
+    public String getPublisher(){
+        return this.Publisher;
+    }
+    
+    public int getPagesNumber(){
+        return this.PagesNumber;
+    }
+     
+    public int getYear(){
+        return this.Year;
+    }
+     
+    public double getPrice(){
+        return this.Price;
+    }
+    
+    //Setters
+    public void setBookTitle(String bt){
+        this.BookTitle = bt;
+    }
+    
+    public void setNameWriter(String nw){
+        this.NameWriter = nw;
+    }
+    
+    public void setISBN(String isbn){
+        this.ISBN = isbn;
+    }
+    
+    public void setPublisher(String p){
+        this.Publisher = p;
+    }
+    
+    public void setPagesNumber(int pn){
+        this.PagesNumber = pn;
+    }
+     
+    public void setYear(int y){
+        this.Year = y;
+    }
+     
+    public void setPrice(double pr){
+        this.Price = pr;
+    }
+    
+    //toString , Print Book info 
+    public String toString(){
+        return "Book Title: " + this.BookTitle + "\nBook Writer: " + this.NameWriter + "\nISBN: " + this.ISBN + "\nPublisher: " + this.Publisher + "\nYear: " + this.Year + "\nPrice: " + this.Price ;
+    }
+}
+
+
+
+import java.util.Scanner;
+
+public class DaySale {
+   static Scanner sc = new Scanner(System.in);
+  
+   public static void newSale(Book[] TB, int length, int[] DSTB){
+       boolean flag = false; 
+       int b = 0;
+       System.out.print("Δώσε τον κωδικό ISBN του βιβλίου: ");
+       String selection = sc.next();
+       for(int i=0; i<length;  i++){
+            if(TB[i].getISBN().equals(selection) ){
+                flag = true;
+                b = i;
+                DSTB[b]++;
+               
+        
+            }
+                
+        }
+        if(!flag){
+            System.out.println("Το βιβλίο δεν βρέθηκε! ");    
+        }
+    
+   }
+   
+   
+   public static void TotalSales(Book[] TB,int length,int[] DSTB){
+       double Total =0;
+       
+      
+       double TotalScience = 0;
+       double TotalDictionary = 0;
+       for(int i=0; i<length; i++){
+           Total += DSTB[i]*TB[i].getPrice();
+           if(TB[i] instanceof Science){
+               TotalScience += DSTB[i]*TB[i].getPrice();
+           }
+           else if(TB[i] instanceof Dictionary){
+               TotalDictionary += DSTB[i]*TB[i].getPrice();
+           }
+       } 
+       System.out.println("Το σύνολο των πωλήσεων σήμερα είναι:  " + Total +" ευρώ");
+       System.out.println("Το σύνολο των πωλήσεων επιστημονικών Βιβλίων σήμερα είναι:  " + TotalScience +" ευρώ");
+       System.out.println("Το σύνολο των πωλήσεων λεξικών σήμερα είναι:  " + TotalDictionary +" ευρώ");
+       
+   }
+   
+   public static void BestSeller(Book[] TB,int length,int[] DSTB){
+       
+       int max = 0;
+       for(int i=1; i<length; i++){
+           if(DSTB[max]< DSTB[i]){
+               max = i;
+           } 
+       }
+       System.out.println(TB[max]);
+   }
+   
+    public static void TotalDaySales(Book[] TB,int length,int[] DSTB, int sale){
+        System.out.println("ISBN"+" "+"Είδος Βιβλίου"+" "+"Πλήθος Αντιτύπων");
+        System.out.println("--------------------------------------");
+        for(int i=0; i<length; i++){
+           if(sale != 0){
+              if(TB[i] instanceof Science){
+               System.out.println(TB[i].getISBN()+" "+"Eπιστημονικό"+" "+DSTB[i]);
+           }
+           else if(TB[i] instanceof Dictionary){
+               System.out.println(TB[i].getISBN()+" "+"λεξικό"+" "+DSTB[i]); 
+           }
+                
+           } 
+       }
+       
+   }
+
+}
+
+
+
+public class Dictionary extends Book {
+   private int entries;
+   
+    public Dictionary(String bt,String nw, String isbn, String p, int pn, int y, double pr, int entries){
+       super(bt,nw,isbn,p,pn,y,pr);
+       this.entries = entries;
+    }
+    
+     //Getters
+    public int getEntries(){
+        return this.entries;
+    }
+    
+    public String getBookType(){
+        return "Dictionary";
+    }
+    
+    
+    //Setters
+    public void setEntries(int entries){
+        this.entries = entries;
+    }
+}
+
+
+public class MyUtils {
+   //search book per ISBN 
+    public static int seqSearch(Book[] Tbook,String x, int length){
+        for(int i=0; i<length; i++ ){
+            //equals method used instead of "Tbook[i].getISBN()== x"
+            /* equals method returns 
+               true if first string == second string
+               false if first string != second string */
+            if(Tbook[i].getISBN().equals(x)){
+               return i;  
+            }
+        }
+        return -1;
+    } 
+    //search book per year
+    public static int seqSearch(Book[] Tbook ,int x, int length){
+        for(int i=0; i<length; i++ ){
+            if(x == Tbook[i].getYear()){
+               return i;  
+            }
+        }
+        return -1;
+    } 
+    
+    
+   //search book per year
+    public static int binSearch(Book[] Tbook, int key, int length){
+        int first = 0;
+        int last = length;
+        int mid = (first + last)/2;
+        while(first <= last ){
+            if (Tbook[mid].getYear()< key ){
+                first = mid + 1;
+            } 
+            else if (Tbook[mid].getYear() == key ){
+                return mid;
+            }
+            else{
+                last = mid - 1;
+            }
+        mid = (first + last)/2;
+        }
+        return -1;
+    }    
+    
+   //search book per ISBN 
+    public static int binSearch(Book[] Tbook, String key, int length){
+        int first = 0;
+        int last = length;
+        int mid = (first + last)/2;
+        while( first <= last ){
+            //compareTo method used instead of "Tbook[mid].getISBN() < key"
+            /* CompareTo method returns 
+               0 if strings are equal
+               1 if first string > second string
+               -1 if first string < second string */
+            if (Tbook[mid].getISBN().compareTo(key) <0){
+                first = mid + 1;
+            }
+            //equals method used instead of "Tbook[mid].getISBN()== key"
+            /* equals method returns 
+               true if first string == second string
+               false if first string != second string */
+            else if (Tbook[mid].getISBN().equals(key)){
+                return mid;
+            }
+            else{
+                last = mid - 1;
+            }
+        mid = (first + last)/2;
+        }
+        return -1;
+    }
+    
+    public static void valueSearch(Book[] Tbook,double min, double max, int length){
+        for(int i=0; i<length; i++ ){
+            if(Tbook[i].getPrice() >= min){
+                if(Tbook[i].getPrice() <= max){
+                   System.out.println(Tbook[i].toString());
+                }
+            }
+        }
+    }
+    
+   
+    public static Book[] bubbleSort(Book[] TBook, int length, int select) {  
+        int n = length;  
+        Book temp ;  
+        //Bubble sort by Writer Name 
+        if(select == 1){  
+            for(int i=0; i < n; i++){  
+                for(int j=1; j < (n-i); j++){  
+                    // CompareTo used for > TBook[j].getNameWriter()
+                    if(TBook[j-1].getNameWriter().compareTo(TBook[j].getNameWriter()) >0 ){  
+                        temp = TBook[j-1];  
+                        TBook[j-1] = TBook[j];  
+                        TBook[j] = temp;  
+                    }  
+                          
+                }    
+            }    
+         }
+        //Bubble sort by ISBN 
+        else if(select == 2){  
+            for(int i=0; i < n; i++){  
+                for(int j=1; j < (n-i); j++){  
+                    // CompareTo used for > TBook[j].getISBN()
+                    if(TBook[j-1].getISBN().compareTo(TBook[j].getISBN()) >0 ){  
+                        temp = TBook[j-1];  
+                        TBook[j-1] = TBook[j];  
+                        TBook[j] = temp;  
+                        
+                    }  
+                          
+                }    
+            }    
+         }  
+        //Bubble sort by Year  
+        else if(select == 3){  
+            for(int i=0; i < n; i++){  
+                for(int j=1; j < (n-i); j++){  
+                    if(TBook[j-1].getYear()> TBook[j].getYear()){  
+                        temp = TBook[j-1];  
+                        TBook[j-1] = TBook[j];  
+                        TBook[j] = temp;  
+                        
+                    }  
+                          
+                }    
+            }    
+         }  
+        //Bubble sort by Price 
+        else if(select == 4){  
+            for(int i=0; i < n; i++){  
+                for(int j=1; j < (n-i); j++){
+                    if(TBook[j-1].getPrice()> TBook[j].getPrice()){  
+                        temp = TBook[j-1];  
+                        TBook[j-1] = TBook[j];  
+                        TBook[j] = temp;  
+                        
+                    }  
+                          
+                }    
+            }    
+         }  
+        return TBook;
+    }  
+    
+  
+    public static Book[] insertionSort(Book[] TBook, int length, int select){
+        int n = length;  
+        Book temp ;  
+            
+        if(select == 1){    
+           //insertion sort by Writer Name 
+            for(int k=1; k<n; k++)   
+            {  
+                temp = TBook[k];  
+                int j= k-1;  
+                while(j>=0 && temp.getNameWriter().compareTo(TBook[j].getNameWriter()) > 0)  
+                { 
+                    TBook[j+1] = temp; 
+                    TBook[j+1] = TBook[j];   
+                    j = j-1;  
+                }  
+            }
+        }
+        else if(select == 2){
+            //insertion sort by ISBN 
+            for(int k=1; k<n; k++)   
+            {  
+                temp = TBook[k];  
+                int j= k-1;  
+                while(j>=0 && temp.getISBN().compareTo(TBook[j].getISBN()) > 0)  
+                { 
+                    TBook[j+1] = temp; 
+                    TBook[j+1] = TBook[j];   
+                    j = j-1;  
+                }  
+            }
+        }
+        else if(select == 3){
+             //insertion sort by Age
+            for(int k=1; k<n; k++)   
+            {  
+                temp = TBook[k];  
+                int j= k-1;  
+                while(j>=0 && temp.getYear() > TBook[j].getYear())  
+                { 
+                    TBook[j+1] = temp; 
+                    TBook[j+1] = TBook[j];   
+                    j = j-1;  
+                }  
+            }
+        }
+        else if(select == 4){
+             //insertion sort by Price 
+            for(int k=1; k<n; k++)   
+            {  
+                temp = TBook[k];  
+                int j= k-1;  
+                while(j>=0 && temp.getPrice() > TBook[j].getPrice())  
+                { 
+                    TBook[j+1] = temp; 
+                    TBook[j+1] = TBook[j];   
+                    j = j-1;  
+                }  
+            }
+        }
+            
+        return TBook;
+    }
+    
+    public static Book[] selectionSort(Book[] TBook, int length, int select){  
+        int n = length;  
+        Book temp ;     
+        if(select == 1){
+            // selection Sort by NameWriter
+            for (int i = 0; i < length - 1; i++)  
+            {  
+                    int index = i;  
+                    for (int j = i + 1; j < length; j++){  
+                        if (TBook[j].getNameWriter().compareTo(TBook[index].getNameWriter()) > 0 ){  
+                            index = j;
+                        }  
+                        temp = TBook[index];   
+                        TBook[index] = TBook[i];  
+                        TBook[i] = temp; 
+                    }
+            }  
+        } 
+        else if(select == 2){
+            // selection Sort by ISBN
+            for (int i = 0; i < length - 1; i++)  
+            {  
+                    int index = i;  
+                    for (int j = i + 1; j < length; j++){  
+                        if (TBook[j].getISBN().compareTo(TBook[index].getISBN()) > 0 ){  
+                            index = j;
+                        }  
+                        temp = TBook[index];   
+                        TBook[index] = TBook[i];  
+                        TBook[i] = temp;  
+                    }
+            }    
+        }
+        else if(select == 3){
+            // selection Sort by Year
+            for (int i = 0; i < length - 1; i++)  
+            {  
+                    int index = i;  
+                    for (int j = i + 1; j < length; j++){  
+                        if (TBook[j].getYear()> TBook[index].getYear()   ){  
+                            index = j;
+                            }  
+                        temp = TBook[index];   
+                        TBook[index] = TBook[i];  
+                        TBook[i] = temp;  
+                    }  
+            }        
+        }
+            
+        else if(select == 4){
+            // selection Sort by Price
+            for (int i = 0; i < length - 1; i++)  
+            {  
+                    int index = i;  
+                    for (int j = i + 1; j < length; j++){  
+                        if (TBook[j].getPrice()> TBook[index].getPrice()){  
+                            index = j;
+                        }  
+                        temp = TBook[index];   
+                        TBook[index] = TBook[i];  
+                        TBook[i] = temp;  
+                    }  
+            }  
+        } 
+      return TBook;     
+    } 
+   
+    public static Book[] quickSort(Book[] TBook, int length, int select, int beg, int end){       
+        int loc;  
+        if(beg<end)  
+        {  
+            
+            loc = partition(TBook, beg, end, select); 
+            quickSort(TBook,length, select, beg, loc-1 );
+            quickSort(TBook,length, select, loc+1, end); 
+           
+        }
+        
+
+      return TBook;     
+    }     
+    
+    public static int partition(Book TB[], int beg, int end, int select)  
+    {  
+          
+        int left, right, loc, flag;
+        Book temp;
+        loc = left = beg;  
+        right = end;  
+        flag = 0;
+        if(select == 1){
+            // quick Sort by NameWriter
+                String pivot = TB[left].getNameWriter();
+                int i = (right - 1);
+                for(int j = right; j <= left - 1; j++)
+                {
+                    if (TB[j].getNameWriter().compareTo(pivot) < 0)
+                    {
+                        i++;
+                        temp = TB[i];
+                        TB[i] = TB[j];
+                        TB[j] = temp;
+                    }
+                }
+                        temp = TB[i + 1];
+                        TB[i + 1] = TB[left];
+                        TB[left] = temp;
+
+                        loc = i+1;
+          
+        } 
+        else if(select == 2){
+            // quick Sort by ISBN
+                String pivot = TB[left].getISBN();
+                int i = (right - 1);
+                for(int j = right; j <= left - 1; j++)
+                {
+                    if (TB[j].getISBN().compareTo(pivot) < 0)
+                {
+                    i++;
+                    temp = TB[i];
+                    TB[i] = TB[j];
+                    TB[j] = temp;
+                }
+            }
+                    temp = TB[i + 1];
+                    TB[i + 1] = TB[left];
+                    TB[left] = temp;
+
+                    loc = i+1;
+          
+        } 
+        else if(select == 3){
+            // quick Sort by Year
+            int pivot = TB[left].getYear();
+            int i = (right - 1);
+            for(int j = right; j <= left - 1; j++)
+            {
+                if (TB[j].getYear() < pivot)
+                {
+                    i++;
+                    temp = TB[i];
+                    TB[i] = TB[j];
+                    TB[j] = temp;
+                }
+            }
+                    temp = TB[i + 1];
+                    TB[i + 1] = TB[left];
+                    TB[left] = temp;
+
+                    loc = i+1;
+          
+         
+        }
+            
+        else if(select == 4){
+            // quick Sort by Price
+            double pivot = TB[left].getPrice();
+            int i = (right - 1);
+            for(int j = right; j <= left - 1; j++)
+            {
+                if (TB[j].getPrice() < pivot)
+                {
+                    i++;
+                    temp = TB[i];
+                    TB[i] = TB[j];
+                    TB[j] = temp;
+                }
+            }
+                    temp = TB[i + 1];
+                    TB[i + 1] = TB[left];
+                    TB[left] = temp;
+
+                    loc = i+1;
+          
+        } 
+        
+        return loc;  
+    }  
+   
+    public static Book[] mergeSort(Book[] TBook, int length, int select,int l, int r){  
+        int n = length;  
+        Book temp ;     
+      
+            if (l < r) {
+                // Find the middle point
+                int m =l+ (r-l)/2;
+                mergeSort(TBook, length, select, l, m);
+                mergeSort(TBook, length, select, m + 1, r);
+                merge(TBook, l, m, r, select);
+            }
+         
+        
+      return TBook;     
+    } 
+
+ 
+    public static void merge(Book arr[], int l, int m, int r, int select)
+    {
+     
+        int n1 = m - l + 1;
+        int n2 = r - m;
+ 
+        //Create temp arrays 
+        Book L[] = new Book[n1];
+        Book R[] = new Book[n2];
+ 
+        //copy data in arrays
+        for (int i = 0; i < n1; ++i){
+            L[i] = arr[l + i];
+        }    
+        for (int j = 0; j < n2; ++j){
+            R[j] = arr[m + 1 + j];
+        }
+      
+
+        int i = 0, j = 0;
+        int k = l;
+          if(select == 1){
+          // Merge Sort by NameWriter
+            while (i < n1 && j < n2) {
+                if (L[i].getNameWriter().compareTo(R[j].getNameWriter())<=0 ){
+                    arr[k] = L[i];
+                    i++;
+                }
+                else {
+                    arr[k] = R[j];
+                    j++;
+                }
+                k++;
+        }
+        } 
+        else if(select == 2){
+            // Merge Sort by ISBN
+            while (i < n1 && j < n2) {
+                if (L[i].getISBN().compareTo(R[j].getISBN())<=0 ) {
+                    arr[k] = L[i];
+                    i++;
+                }
+                else {
+                    arr[k] = R[j];
+                    j++;
+                }
+                k++;
+            }
+        }
+        else if(select == 3){
+            // Merge Sort by Year
+            while (i < n1 && j < n2) {
+                if (L[i].getYear() <= R[j].getYear()) {
+                    arr[k] = L[i];
+                    i++;
+                }
+                else {
+                    arr[k] = R[j];
+                    j++;
+                }
+                k++;
+            }
+        }
+            
+        else if(select == 4){
+            // Merge Sort by Price
+            while (i < n1 && j < n2) {
+                if (L[i].getPrice() <= R[j].getPrice()) {
+                    arr[k] = L[i];
+                    i++;
+                }
+                else {
+                    arr[k] = R[j];
+                    j++;
+                }
+                k++;
+            }
+        }
+    
+        while (i < n1) {
+            arr[k] = L[i];
+            i++;
+            k++;
+        }
+ 
+        while (j < n2) {
+            arr[k] = R[j];
+            j++;
+            k++;
+        }
+    }    
+}
+
+
+public class Science extends Book {
+    private String pedio;
+      public Science(String bt,String nw, String isbn, String p, int pn, int y, double pr, String pedio){
+       super(bt,nw,isbn,p,pn,y,pr);
+       this.pedio = pedio;
+    }
+    
+     //Getters
+    public String getPedio(){
+        return this.pedio;
+    }
+    
+    public String getBookType(){
+        return "Science";
+    }
+    
+    
+    //Setters
+    public void setPedio(String pedio){
+        this.pedio = pedio;
+    }
+}
+    
+     
+     
+
+
